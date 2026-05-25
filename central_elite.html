@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Central Élite — Sistema de Rendimiento</title>
+<meta name="theme-color" content="#3a7d0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Central Élite">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Central Élite">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f6f8;--bg2:#ffffff;--bg3:#f0f2f5;--bg4:#e4e8ed;
+  --bdr:#dde2ea;--bdr2:#ccd3dc;
+  --ac:#3a7d0a;--ac-dim:rgba(58,125,10,.08);--ac-glow:rgba(58,125,10,.18);
+  --red:#c0392b;--red-dim:rgba(192,57,43,.08);
+  --blu:#1a5fa8;--blu-dim:rgba(26,95,168,.08);
+  --amb:#a0620a;--amb-dim:rgba(160,98,10,.08);
+  --tx:#1a2332;--tx2:#4a5e74;--tx3:#8a9eb8;
+  --r:10px;--rl:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--tx);
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  font-size:14px;max-width:480px;margin:0 auto;
+  padding-bottom:32px;overflow-x:hidden;
+}
+
+/* ── TOPBAR ── */
+#topbar{
+  position:sticky;top:0;z-index:200;
+  background:var(--bg);border-bottom:1px solid var(--bdr);
+  padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.logo{
+  font-family:'Rajdhani',sans-serif;font-size:19px;font-weight:700;
+  letter-spacing:3px;color:var(--ac);line-height:1.15;flex-shrink:0;
+}
+.logo small{
+  display:block;font-family:'Inter',sans-serif;font-size:9px;
+  letter-spacing:2px;color:var(--tx3);font-weight:500;
+}
+.topbar-actions{display:flex;gap:6px;align-items:center}
+#export-btn{
+  display:flex;align-items:center;gap:5px;
+  background:var(--ac);color:#ffffff;border:none;border-radius:8px;
+  padding:8px 11px;font-family:'Rajdhani',sans-serif;
+  font-size:12px;font-weight:700;letter-spacing:1.5px;
+  cursor:pointer;white-space:nowrap;text-transform:uppercase;flex-shrink:0;
+}
+#export-btn:active{opacity:.85;transform:scale(.97)}
+#ai-btn{
+  display:flex;align-items:center;gap:5px;
+  background:var(--blu-dim);color:var(--blu);
+  border:1px solid rgba(26,95,168,.25);border-radius:8px;
+  padding:8px 11px;font-family:'Rajdhani',sans-serif;
+  font-size:12px;font-weight:700;letter-spacing:1px;
+  cursor:pointer;white-space:nowrap;text-transform:uppercase;flex-shrink:0;
+}
+#ai-btn:active{opacity:.85;transform:scale(.97)}
+#settings-btn{
+  width:32px;height:32px;background:var(--bg3);color:var(--tx2);
+  border:1px solid var(--bdr);border-radius:8px;cursor:pointer;
+  font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+#settings-btn:active{opacity:.85}
+
+/* ── DAY NAV ── */
+#day-nav{
+  background:var(--bg);border-bottom:1px solid var(--bdr);
+  padding:10px 16px;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;
+}
+#day-nav::-webkit-scrollbar{display:none}
+.day-btn{
+  flex-shrink:0;display:flex;flex-direction:column;align-items:center;
+  padding:7px 13px;border-radius:24px;border:1px solid var(--bdr);
+  background:var(--bg2);cursor:pointer;transition:all .15s;
+}
+.day-btn .da{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--tx2);letter-spacing:.5px}
+.day-btn .dt{font-size:9px;color:var(--tx3);letter-spacing:.5px;margin-top:1px}
+.day-btn.active{background:var(--ac);border-color:var(--ac)}
+.day-btn.active .da{color:#ffffff}
+.day-btn.active .dt{color:rgba(255,255,255,.65)}
+.day-btn.match-day{border-color:rgba(230,168,64,.35)}
+.day-btn.match-day .da{color:var(--amb)}
+
+/* ── SECTION NAV ── */
+#section-nav{
+  display:flex;padding:10px 16px;gap:7px;border-bottom:1px solid var(--bdr);
+}
+.sec-btn{
+  flex:1;padding:8px 4px;text-align:center;border-radius:8px;
+  border:1px solid var(--bdr);background:transparent;color:var(--tx2);
+  font-size:10px;font-weight:600;letter-spacing:.5px;cursor:pointer;
+  text-transform:uppercase;transition:all .15s;
+}
+.sec-btn.active{background:var(--ac-dim);color:var(--ac);border-color:rgba(58,125,10,.25)}
+
+/* ── MAIN ── */
+#main{padding:16px}
+
+/* ── DAY HEADER ── */
+.dhdr{margin-bottom:16px}
+.dhdr-title{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;letter-spacing:1px;line-height:1.1}
+.dhdr-sub{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--tx3);margin-top:3px}
+.dtags{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.dtag{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600;
+  letter-spacing:.5px;text-transform:uppercase;border:1px solid;
+}
+.tg{color:var(--ac);border-color:rgba(58,125,10,.2);background:var(--ac-dim)}
+.tb{color:var(--blu);border-color:rgba(64,144,230,.25);background:var(--blu-dim)}
+.tr{color:var(--red);border-color:rgba(230,69,69,.25);background:var(--red-dim)}
+.ta{color:var(--amb);border-color:rgba(230,168,64,.25);background:var(--amb-dim)}
+.tn{color:var(--tx2);border-color:var(--bdr);background:var(--bg2)}
+
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--rl);margin-bottom:10px;overflow:hidden}
+.card-hdr{
+  padding:13px 15px;display:flex;align-items:center;
+  justify-content:space-between;cursor:pointer;user-select:none;gap:10px;
+}
+.card-hdr-l{display:flex;align-items:center;gap:10px;min-width:0}
+.ci{
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;flex-shrink:0;
+}
+.ci-g{background:var(--ac-dim)} .ci-b{background:var(--blu-dim)}
+.ci-r{background:var(--red-dim)} .ci-a{background:var(--amb-dim)}
+.card-title{font-size:13px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-meta{font-size:11px;color:var(--tx3);margin-top:2px}
+.chev{color:var(--tx3);font-size:18px;flex-shrink:0;transition:transform .2s;display:inline-block}
+.card.open .chev{transform:rotate(180deg)}
+.card-body{display:none;padding:14px 15px;border-top:1px solid var(--bdr)}
+.card.open .card-body{display:block}
+
+/* ── NOTES ── */
+.note{
+  display:flex;gap:9px;padding:10px 12px;
+  border-radius:8px;font-size:12px;line-height:1.5;margin-top:10px;
+}
+.ni{background:var(--blu-dim);border:1px solid rgba(64,144,230,.2);color:#80b8f0}
+.nw{background:var(--ac-dim);border:1px solid rgba(58,125,10,.2);color:#2d6b00}
+.nd{background:var(--red-dim);border:1px solid rgba(230,69,69,.2);color:#e08888}
+.na{background:var(--amb-dim);border:1px solid rgba(230,168,64,.2);color:#e0a860}
+
+/* ── SERIES TABLE ── */
+.stbl{width:100%;border-collapse:collapse;margin-top:14px}
+.stbl th{
+  font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  color:var(--tx3);padding:0 5px 8px;text-align:center;
+}
+.stbl th:first-child{text-align:left;width:28px}
+.stbl td{padding:4px 5px;vertical-align:middle}
+.stbl td:first-child{font-size:11px;color:var(--tx3);font-weight:700;text-align:center}
+.si{
+  background:var(--bg);border:1px solid var(--bdr);border-radius:7px;
+  color:var(--tx);font-size:13px;font-weight:600;text-align:center;
+  padding:7px 3px;width:100%;outline:none;font-family:inherit;
+}
+.si:focus{border-color:rgba(58,125,10,.45)}
+.si::placeholder{color:var(--tx3)}
+.done-btn{
+  width:34px;height:34px;border-radius:8px;border:1px solid var(--bdr);
+  background:var(--bg);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;margin:auto;transition:all .15s;font-size:16px;
+  color:transparent;
+}
+.done-btn.chk{background:var(--ac-dim);border-color:rgba(58,125,10,.35);color:var(--ac)}
+
+/* ── PROTOCOL STEPS ── */
+.pstep{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--bdr);align-items:flex-start}
+.pstep:last-child{border-bottom:none;padding-bottom:0}
+.pnum{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--ac-dim);color:var(--ac);
+  font-size:10px;font-weight:700;display:flex;
+  align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;
+}
+.ptxt{font-size:12px;color:var(--tx2);line-height:1.5}
+.ptxt b{color:var(--tx);font-weight:600}
+
+/* ── RECOVERY OPTIONS ── */
+.rec-opt{
+  display:flex;gap:12px;padding:14px;
+  border-radius:var(--r);border:1px solid var(--bdr);
+  margin-bottom:10px;cursor:pointer;transition:all .15s;align-items:flex-start;
+}
+.rec-opt.sel{border-color:rgba(58,125,10,.3);background:var(--ac-dim)}
+.rdot{
+  width:16px;height:16px;border-radius:50%;border:2px solid var(--bdr);
+  flex-shrink:0;margin-top:3px;position:relative;transition:all .15s;
+}
+.rec-opt.sel .rdot{border-color:var(--ac);background:var(--ac)}
+.rec-opt.sel .rdot::after{
+  content:'';position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);width:5px;height:5px;
+  border-radius:50%;background:#ffffff;
+}
+.rec-body{}
+.rec-title{font-size:13px;font-weight:600;margin-bottom:4px}
+.rec-desc{font-size:12px;color:var(--tx2);line-height:1.4}
+
+/* ── MEALS ── */
+.meal-grp{margin-bottom:22px}
+.meal-lbl{
+  font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:var(--tx3);margin-bottom:10px;padding-bottom:8px;
+  border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px;
+}
+.meal-opt{
+  display:flex;gap:12px;padding:12px;border-radius:var(--r);
+  border:1px solid var(--bdr);margin-bottom:8px;cursor:pointer;
+  transition:all .15s;align-items:flex-start;
+}
+.meal-opt.sel{border-color:rgba(58,125,10,.3);background:var(--ac-dim)}
+.mdot{
+  width:16px;height:16px;border-radius:50%;border:2px solid var(--bdr);
+  flex-shrink:0;margin-top:2px;position:relative;transition:all .15s;
+}
+.meal-opt.sel .mdot{border-color:var(--ac);background:var(--ac)}
+.meal-opt.sel .mdot::after{
+  content:'';position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);width:5px;height:5px;
+  border-radius:50%;background:#ffffff;
+}
+.mot{font-size:12px;font-weight:600;margin-bottom:3px}
+.mod{font-size:11px;color:var(--tx2);line-height:1.4}
+
+/* ── REPORT ── */
+.rpt-sec{margin-bottom:22px}
+.rpt-head{
+  font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;
+  letter-spacing:2.5px;text-transform:uppercase;color:var(--tx3);
+  margin-bottom:14px;display:flex;align-items:center;gap:10px;
+}
+.rpt-head::after{content:'';flex:1;height:1px;background:var(--bdr)}
+.rpt-row{margin-bottom:18px}
+.rpt-lbl-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.rpt-lbl-txt{font-size:13px;font-weight:500}
+.rpt-val{font-size:17px;font-weight:700;color:var(--ac);min-width:28px;text-align:right}
+.rpt-val.danger{color:var(--red)}
+input[type=range]{
+  width:100%;height:4px;-webkit-appearance:none;appearance:none;
+  background:var(--bg4);border-radius:2px;outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:22px;height:22px;border-radius:50%;
+  background:var(--ac);cursor:pointer;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.15);
+}
+input[type=range].dr::-webkit-slider-thumb{background:var(--red);}
+.rpt-sel{
+  width:100%;background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;
+  color:var(--tx);font-family:inherit;font-size:13px;padding:10px 12px;outline:none;
+  -webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a9eb8' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;
+}
+.rpt-sel:focus{border-color:rgba(58,125,10,.4)}
+.rpt-sel option{background:#ffffff}
+.rpt-ta{
+  width:100%;background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;
+  color:var(--tx);font-family:inherit;font-size:13px;padding:10px 12px;
+  outline:none;min-height:90px;resize:vertical;line-height:1.5;
+}
+.rpt-ta:focus{border-color:rgba(58,125,10,.4)}
+.rpt-ta::placeholder{color:var(--tx3)}
+.weight-row{
+  display:flex;align-items:center;gap:10px;padding:12px;
+  background:var(--bg3);border:1px solid var(--bdr);border-radius:10px;margin-bottom:12px;
+}
+.weight-row label{flex:1;font-size:13px;color:var(--tx2)}
+.weight-in{
+  background:var(--bg);border:1px solid var(--bdr);border-radius:8px;
+  color:var(--ac);font-size:18px;font-weight:700;text-align:center;
+  width:72px;padding:8px 5px;outline:none;font-family:inherit;
+}
+.weight-in:focus{border-color:rgba(58,125,10,.45)}
+.weight-unit{font-size:12px;color:var(--tx3)}
+
+/* ── HERO CARDS ── */
+.hero{border-radius:var(--rl);padding:28px 22px;text-align:center;margin-bottom:12px}
+.hero.rest{background:var(--bg2);border:1px solid var(--bdr)}
+.hero.match{background:linear-gradient(145deg,rgba(58,125,10,.06),rgba(58,125,10,.02));border:1px solid rgba(58,125,10,.15)}
+.hero.rest-day{background:var(--bg2);border:1px solid var(--bdr)}
+.hero-ico{font-size:42px;margin-bottom:12px;line-height:1}
+.hero-ttl{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;letter-spacing:1px;margin-bottom:8px}
+.hero-sub{font-size:12px;color:var(--tx2);line-height:1.6}
+.match-time{font-family:'Rajdhani',sans-serif;font-size:58px;font-weight:700;color:var(--ac);letter-spacing:-1px;line-height:1}
+.match-lbl{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--tx3);margin-top:5px}
+
+/* ── SAVE BTN ── */
+.save-btn{
+  width:100%;background:var(--ac);color:#ffffff;border:none;border-radius:10px;
+  padding:14px;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;
+  letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;margin-top:8px;
+}
+.save-btn:active{opacity:.85;transform:scale(.98)}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:24px;left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:var(--ac);color:#ffffff;
+  padding:11px 26px;border-radius:24px;
+  font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  z-index:1000;white-space:nowrap;pointer-events:none;
+}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ── DIVIDER ── */
+.div{height:1px;background:var(--bdr);margin:14px 0}
+
+/* ── INFO BOX ── */
+.info-box{
+  background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:12px 14px;margin-bottom:12px;font-size:12px;color:var(--tx2);line-height:1.55;
+}
+.info-box b{color:var(--tx);font-weight:600}
+
+.section-empty{
+  text-align:center;padding:36px 20px;
+  color:var(--tx3);font-size:13px;line-height:1.6;
+}
+.section-empty .ei{font-size:36px;margin-bottom:12px}
+
+/* ════════════════════════════════
+   MODALS
+════════════════════════════════ */
+.overlay{
+  position:fixed;inset:0;background:rgba(10,16,24,.65);z-index:500;
+  display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.overlay.show{opacity:1;pointer-events:all}
+.modal{
+  width:100%;max-width:480px;background:var(--bg2);
+  border-radius:20px 20px 0 0;
+  transform:translateY(100%);transition:transform .32s cubic-bezier(.34,1.2,.64,1);
+  max-height:90vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom,0);
+}
+.overlay.show .modal{transform:translateY(0)}
+.modal-drag{width:36px;height:4px;background:var(--bdr2);border-radius:2px;margin:12px auto 0}
+.modal-hdr{
+  padding:14px 18px 0;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;background:var(--bg2);z-index:10;
+  border-bottom:1px solid transparent;
+}
+.modal-title{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
+.modal-close{
+  width:28px;height:28px;border-radius:7px;background:var(--bg3);
+  border:none;cursor:pointer;font-size:13px;color:var(--tx2);
+  display:flex;align-items:center;justify-content:center;
+}
+.modal-body{padding:14px 18px 0}
+
+/* Settings form */
+.form-row{margin-bottom:14px}
+.form-lbl{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);margin-bottom:7px}
+.form-inp{
+  width:100%;background:var(--bg);border:1px solid var(--bdr);border-radius:8px;
+  color:var(--tx);font-family:inherit;font-size:13px;padding:10px 12px;outline:none;
+}
+.form-inp:focus{border-color:rgba(58,125,10,.4)}
+.form-hint{font-size:11px;color:var(--tx3);margin-top:6px;line-height:1.5}
+.modal-btn{
+  width:100%;background:var(--ac);color:#fff;border:none;border-radius:10px;
+  padding:13px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;
+  letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;margin-top:6px;
+}
+.modal-btn:active{opacity:.85;transform:scale(.98)}
+.modal-btn.secondary{
+  background:var(--bg3);color:var(--tx2);
+  border:1px solid var(--bdr);
+}
+.modal-btn.danger-btn{background:var(--red-dim);color:var(--red);border:1px solid rgba(192,57,43,.2);}
+
+/* AI Review */
+.ai-step{
+  display:flex;gap:12px;align-items:center;padding:11px 0;
+  border-bottom:1px solid var(--bdr);opacity:.3;transition:opacity .3s;
+}
+.ai-step:last-child{border-bottom:none}
+.ai-step.active{opacity:1}
+.ai-step.done{opacity:.65}
+.step-ico{
+  width:30px;height:30px;border-radius:50%;background:var(--bg3);
+  border:1px solid var(--bdr);display:flex;align-items:center;
+  justify-content:center;font-size:13px;flex-shrink:0;
+}
+.ai-step.active .step-ico{background:var(--blu-dim);border-color:rgba(26,95,168,.3)}
+.ai-step.done .step-ico{background:var(--ac-dim);border-color:rgba(58,125,10,.3)}
+.step-txt{font-size:13px;font-weight:500}
+.step-sub{font-size:11px;color:var(--tx3);margin-top:2px}
+
+.trainer-card{
+  background:linear-gradient(135deg,rgba(58,125,10,.07),rgba(58,125,10,.02));
+  border:1px solid rgba(58,125,10,.2);border-radius:12px;
+  padding:14px;margin:14px 0 10px;
+}
+.trainer-card-hdr{
+  font-size:10px;font-weight:700;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--ac);margin-bottom:8px;
+  display:flex;align-items:center;gap:6px;
+}
+.trainer-card-txt{font-size:13px;color:var(--tx);line-height:1.65}
+
+.changes-card{
+  background:var(--bg3);border:1px solid var(--bdr);border-radius:10px;
+  padding:13px;margin-bottom:14px;
+}
+.changes-hdr{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);margin-bottom:7px}
+.changes-txt{font-size:12px;color:var(--tx2);line-height:1.6}
+
+.ai-error-box{
+  background:var(--red-dim);border:1px solid rgba(192,57,43,.2);border-radius:10px;
+  padding:13px;margin:12px 0;font-size:12px;color:var(--red);line-height:1.5;
+}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinning{animation:spin .9s linear infinite;display:inline-block}
+
+.modal-spacer{height:20px}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="logo">CENTRAL <br><small>ÉLITE · 90KG RENDIMIENTO</small></div>
+  <div class="topbar-actions">
+    <button id="ai-btn" onclick="openAIReview()">🤖 IA Claude</button>
+    <button id="settings-btn" onclick="openSettings()" title="Configuración">⚙</button>
+    <button id="export-btn" onclick="exportJSON()">↓ JSON</button>
+  </div>
+</div>
+
+<div id="day-nav"></div>
+<div id="section-nav"></div>
+<div id="main"></div>
+<div id="toast"></div>
+
+<!-- ══ SETTINGS MODAL ══ -->
+<div id="settings-overlay" class="overlay" onclick="if(event.target===this)closeModal('settings')">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="modal-hdr">
+      <div class="modal-title">⚙ Configuración</div>
+      <button class="modal-close" onclick="closeModal('settings')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-lbl">Análisis con IA</div>
+        <div class="form-hint" style="background:var(--ac-dim);border:1px solid rgba(58,125,10,.2);border-radius:8px;padding:10px 12px;color:var(--tx2);margin-top:0">✅ <b>Claude ya está conectado.</b> El análisis semanal usa la IA integrada en la app. Pulsa "🤖 IA Claude" en la barra superior para analizar tu semana.</div>
+      </div>
+      <div class="form-row">
+        <div class="form-lbl">Perfil del Atleta</div>
+        <div class="form-hint">Central diestro · 90 kg · 186 cm · Lesiones activas: isquiotibial izquierdo (recaída) y aductor izquierdo. Alergias: celíaco (100% SG), nueces, melocotón.</div>
+      </div>
+      <button class="modal-btn danger-btn" onclick="resetPlan()">🔄 Restaurar Plan Original</button>
+      <div class="modal-spacer"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ AI REVIEW MODAL ══ -->
+<div id="ai-overlay" class="overlay" onclick="if(event.target===this && (aiState==='idle'||aiState==='error'||aiState==='success'))closeModal('ai')">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="modal-hdr">
+      <div class="modal-title">🤖 Revisión Semanal · Claude</div>
+      <button class="modal-close" onclick="closeModal('ai')">✕</button>
+    </div>
+    <div class="modal-body" id="ai-modal-body"></div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════
+   DEFAULT PLAN (datos originales del preparador)
+═══════════════════════════════════════ */
+
+const DEFAULT_PLAN = {
+  dias: [
+    {id:'lunes',    abbr:'LUN', label:'Recuperación', type:'rec',   cls:''},
+    {id:'martes',   abbr:'MAR', label:'Tren Inf.',    type:'gym',   cls:''},
+    {id:'miercoles',abbr:'MIÉ', label:'Descanso',     type:'rest',  cls:''},
+    {id:'jueves',   abbr:'JUE', label:'Tren Sup.',    type:'gym',   cls:''},
+    {id:'viernes',  abbr:'VIE', label:'Táctico',      type:'team',  cls:''},
+    {id:'sabado',   abbr:'SÁB', label:'Activación',   type:'gym',   cls:''},
+    {id:'domingo',  abbr:'DOM', label:'PARTIDO',       type:'match', cls:'match-day'},
+  ],
+  ejercicios: {
+    martes:[
+      {id:'glb', ico:'🦵', icls:'ci-g',
+       title:'Long-Lever Glute Bridge',
+       meta:'4 series · 25 seg estático · PC', series:4, type:'time', rest:'90 seg',
+       note:{txt:'Isquio izquierdo tenso pero seguro. Si notas <b>pinchazo agudo</b>, baja la pelvis de inmediato.',cls:'nw'}},
+      {id:'blg', ico:'⚡', icls:'ci-g',
+       title:'Sentadilla Búlgara',
+       meta:'3 series · 6 reps / pierna · Mancuernas', series:3, type:'weight', rest:'90 seg',
+       note:{txt:'Bajada lenta <b>3 segundos</b>, subida fuerte en <b>1 segundo</b>. Control excéntrico total.',cls:'ni'}},
+      {id:'equ', ico:'⚖️', icls:'ci-b',
+       title:'Equilibrio Unipedal',
+       meta:'3 series · 45 seg · Tobillo Derecho', series:3, type:'time', rest:'60 seg',
+       note:{txt:'Sobre colchoneta o superficie inestable. Pases suaves de balón contra la pared para reactivar los receptores del antiguo esguince.',cls:'ni'}},
+    ],
+    jueves:[
+      {id:'pnc', ico:'💪', icls:'ci-b',
+       title:'Press de Banca con Mancuernas',
+       meta:'3 series · 8 reps · RPE 8', series:3, type:'weight', rest:'90 seg'},
+      {id:'rem', ico:'🔁', icls:'ci-b',
+       title:'Remo con Barra — Espalda',
+       meta:'3 series · 8 reps · Moderado', series:3, type:'weight', rest:'90 seg',
+       note:{txt:'Tronco a <b>45°</b>, columna recta. Retracción escapular al tirar.',cls:'ni'}},
+      {id:'pal', ico:'🎯', icls:'ci-g',
+       title:'Pallof Press — Core',
+       meta:'3 series · 12 reps / lado · Banda elástica', series:3, type:'band', rest:'60 seg',
+       note:{txt:'Goma anclada lateralmente a altura del pecho. Empujar al frente, <b>aguantar 2 seg</b> rígido. Evita que el abdomen gire.',cls:'ni'}},
+    ],
+    sabado:[
+      {id:'sli', ico:'🛷', icls:'ci-r',
+       title:'Sliders de Isquios',
+       meta:'3 series · 5 reps · Excéntrico puro', series:3, type:'time', rest:'120 seg',
+       note:{txt:'<b>4 segundos exactos</b> al estirar los talones. Al llegar al límite, recoge con las manos — NUNCA uses el isquio para recoger. Vital para elastificar la cicatriz.',cls:'nd'}},
+      {id:'pla', ico:'🏔️', icls:'ci-g',
+       title:'Plancha Abdominal',
+       meta:'3 series · 30 seg · Antebrazos', series:3, type:'time', rest:'60 seg',
+       note:{txt:'Empuja el suelo con los codos. <b>Bloqueo pélvico máximo.</b>',cls:'nw'}},
+    ],
+  },
+  comidas: {
+    breakfast:{lbl:'🍳 Desayuno — Alta Proteína', opts:[
+      {t:'Huevos Poché Pro', d:'3 huevos pochados sobre 2 tostadas SIN GLUTEN con tomate triturado, ajo y aceite de oliva virgen extra.'},
+      {t:'El Revuelto Cremoso', d:'3 huevos revueltos a fuego lento con mantequilla + 80 g jamón serrano + 1 rodaja de piña natural (bromelina digestiva).'},
+      {t:'Tortilla de Central', d:'Tortilla francesa de 3 huevos rellena de queso de cabra y champiñones. 2 tostadas SIN GLUTEN.'},
+    ]},
+    lunch:{lbl:'🍚 Comida — Carga de Carbohidratos', opts:[
+      {t:'Risotto de Setas Deportivo', d:'Arroz cremoso con caldo de pollo casero, setas variadas y 200 g pechuga en dados salteada con ajo.'},
+      {t:'Arroz Chimichurri', d:'Arroz blanco con chimichurri casero (AOVE, vinagre, ajo, perejil, orégano) + 200 g contramuslo de pollo a la plancha.'},
+      {t:'Pasta Élite Boloñesa SIN GLUTEN', d:'Pasta de harina de arroz/maíz con tomate natural, albahaca y 200 g carne picada de ternera magra.'},
+      {t:'Patatas Gajo de Rendimiento', d:'400 g patatas al horno/airfryer con pimentón, ajo y romero + 200 g solomillo de cerdo a la plancha.'},
+    ]},
+    snack:{lbl:'🍌 Merienda Pre-Entreno — 19:30 h', opts:[
+      {t:'Plátano + Tortitas de Arroz', d:'1 plátano maduro + 2 tortitas de arroz con mermelada de fresa o frambuesa. Energía de asimilación rápida.'},
+      {t:'Crema de Arroz Energética', d:'Harina de arroz SG en agua/leche templada + miel + puñado de ALMENDRAS laminadas o PISTACHOS picados.'},
+    ]},
+    dinner:{lbl:'🐟 Cena Post-Entreno — Ultra Digestiva', opts:[
+      {t:'Puré Trufado con Pescado', d:'Puré de patata ligero (cocida, leche sin lactosa, gotas de aceite de trufa) + 200 g merluza/bacalao/gallo al horno.'},
+      {t:'Crema de Calabacín y Tortilla', d:'Crema de calabacín, puerro y patata sin nata + tortilla de 2 huevos con finas hierbas + lonchas de pavo.'},
+      {t:'Pescado en Papillote', d:'200 g lubina o dorada en papel horno con zanahoria y calabacín. Cocción en su propio jugo, digestión récord.'},
+    ]},
+    sunday:{lbl:'🏆 Comida Post-Partido — Recarga de Glucógeno', opts:[
+      {t:'La Hamburguesa del Muro', d:'Ternera 100% de carnicería en pan redondo SIN GLUTEN, tomate, canónigos, queso fundido y patatas caseras al horno.'},
+      {t:'Paella del Marinero', d:'Arroz con caldo de pescado, calamares, sepia y gambas. Aminoácidos limpios para reparar fibras musculares.'},
+    ]},
+    carbload:{lbl:'🍚 Cena Sábado — Carga de Hidratos Pre-Partido', opts:[
+      {t:'Arroz con Pollo a la Plancha', d:'Ración generosa de arroz blanco con 200 g de pollo a la plancha. Sin salsas pesadas. Pre-carga de glucógeno para el partido de mañana.'},
+      {t:'Pasta Boloñesa SIN GLUTEN', d:'Pasta de harina de arroz/maíz con tomate natural y 200 g carne picada de ternera. Ración grande para cargar el glucógeno muscular.'},
+      {t:'Patatas al Horno con Solomillo', d:'400 g de patatas al horno con especias + 200 g solomillo de cerdo. Carga limpia sin grasas saturadas pesadas.'},
+    ]},
+  },
+  calentamiento: [
+    {n:1, txt:'<b>Gemelos y Sóleos</b> — Rodillo miofascial suave'},
+    {n:2, txt:'<b>Isquiotibiales</b> — Muy suave en femoral izquierdo (no presionar la cicatriz de Semana Santa)'},
+    {n:3, txt:'<b>Glúteos</b> — Rodillo o martillo de masaje'},
+    {n:4, txt:'<b>Aductores</b> — Zona interna izquierda, con cuidado'},
+    {n:5, txt:'<b>Cat-Camel</b> — 2 series × 10 reps (movilidad columna)'},
+    {n:6, txt:'<b>90-90 de Cadera</b> — 2 series × 8 reps por lado'},
+    {n:7, txt:'<b>Monster Walks</b> — Banda en rodillas, 2×12 pasos laterales (activa glúteo medio, libera al aductor)'},
+    {n:8, txt:'<b>Puente de Glúteo Isométrico</b> — 2 series × 20 seg estático'},
+  ],
+};
+
+/* ═══════════════════════════════════════
+   PLAN MANAGEMENT
+═══════════════════════════════════════ */
+
+const PLAN_KEY      = 'central_elite_plan_v2';
+const SETTINGS_KEY  = 'central_elite_settings_v1';
+const STORAGE_KEY   = 'central_elite_v1';
+
+function loadCurrentPlan(){
+  try{
+    const raw=localStorage.getItem(PLAN_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT_PLAN));
+}
+
+function savePlan(plan){
+  try{ localStorage.setItem(PLAN_KEY, JSON.stringify(plan)); }catch(e){}
+}
+
+function resetPlan(){
+  if(!confirm('¿Restaurar el plan original? Se perderán los cambios de IA anteriores.')) return;
+  localStorage.removeItem(PLAN_KEY);
+  currentPlan = JSON.parse(JSON.stringify(DEFAULT_PLAN));
+  render();
+  closeModal('settings');
+  toast('Plan original restaurado ✓');
+}
+
+let currentPlan = loadCurrentPlan();
+
+/* ═══════════════════════════════════════
+   SETTINGS
+═══════════════════════════════════════ */
+
+function getSettings(){
+  try{
+    const raw=localStorage.getItem(SETTINGS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  }catch(e){ return {}; }
+}
+
+function openSettings(){
+  document.getElementById('settings-overlay').classList.add('show');
+}
+
+function saveSettings(){
+  closeModal('settings');
+  toast('Configuración guardada ✓');
+}
+
+/* ═══════════════════════════════════════
+   MODAL HELPERS
+═══════════════════════════════════════ */
+
+function closeModal(which){
+  document.getElementById(which+'-overlay').classList.remove('show');
+}
+
+/* ═══════════════════════════════════════
+   AI REVIEW
+═══════════════════════════════════════ */
+
+let aiState   = 'idle';
+let pendingPlan = null;
+
+function openAIReview(){
+  aiState = 'idle';
+  pendingPlan = null;
+  renderAIModal('idle');
+  document.getElementById('ai-overlay').classList.add('show');
+}
+
+function renderAIModal(st, data){
+  aiState = st;
+  const body = document.getElementById('ai-modal-body');
+
+  if(st === 'idle'){
+    body.innerHTML = `
+      <div style="text-align:center;padding:20px 0 12px">
+        <div style="font-size:46px;margin-bottom:10px">🤖</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:19px;font-weight:700;margin-bottom:8px">Revisión Semanal con Claude</div>
+        <div style="font-size:12px;color:var(--tx2);line-height:1.65;margin-bottom:20px">
+          Claude analizará tus reportes y cargas de la semana y te devolverá un plan actualizado para la siguiente — sin que tengas que tocar nada.
+        </div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--bdr);border-radius:10px;padding:13px;margin-bottom:14px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);margin-bottom:8px">Claude recibirá</div>
+        <div style="font-size:12px;color:var(--tx2);line-height:1.75">
+          ✓ Reportes clínicos diarios (peso, sueño, energía, dolor)<br>
+          ✓ Ejercicios completados y cargas registradas<br>
+          ✓ Opciones de comida seleccionadas<br>
+          ✓ Plan actual completo de la semana
+        </div>
+      </div>
+      <button class="modal-btn" onclick="startAIReview()">🚀 Analizar semana y generar plan</button>
+      <div class="modal-spacer"></div>`;
+
+  } else if(st === 'loading'){
+    const step = data||0;
+    const steps = [
+      {ico:'📊', txt:'Recopilando datos de la semana', sub:'Ejercicios, reportes y comidas'},
+      {ico:'🔗', txt:'Conectando con Claude', sub:'Enviando análisis completo'},
+      {ico:'⚙️', txt:'Claude analizando y generando plan', sub:'Esto puede tardar unos segundos'},
+      {ico:'✅', txt:'Procesando respuesta', sub:'Preparando el nuevo plan'},
+    ];
+    body.innerHTML = `
+      <div style="padding:8px 0 20px">
+        ${steps.map((s,i) => `
+          <div class="ai-step ${step>i?'done':''}${step===i?' active':''}">
+            <div class="step-ico">${step>i?'✓':step===i?'<span class="spinning">◌</span>':s.ico}</div>
+            <div>
+              <div class="step-txt">${s.txt}</div>
+              <div class="step-sub">${s.sub}</div>
+            </div>
+          </div>`).join('')}
+      </div>`;
+
+  } else if(st === 'success'){
+    body.innerHTML = `
+      <div class="trainer-card">
+        <div class="trainer-card-hdr">💬 Tu Preparador dice</div>
+        <div class="trainer-card-txt">${data.mensaje_entrenador || 'Plan actualizado correctamente.'}</div>
+      </div>
+      ${data.resumen_cambios ? `
+      <div class="changes-card">
+        <div class="changes-hdr">📋 Cambios para la próxima semana</div>
+        <div class="changes-txt">${data.resumen_cambios}</div>
+      </div>` : ''}
+      <button class="modal-btn" onclick="applyAndClose(true)">✅ Aplicar y empezar nueva semana</button>
+      <button class="modal-btn secondary" style="margin-top:8px" onclick="applyAndClose(false)">Aplicar plan (mantener registros actuales)</button>
+      <button class="modal-btn secondary" style="margin-top:8px" onclick="closeModal('ai')">Cancelar, no aplicar</button>
+      <div class="modal-spacer"></div>`;
+
+  } else if(st === 'error'){
+    body.innerHTML = `
+      <div class="ai-error-box">
+        <b>No se pudo conectar con Claude</b><br><br>${data||'Comprueba tu conexión a internet e inténtalo de nuevo.'}
+      </div>
+      <button class="modal-btn" onclick="startAIReview()">🔄 Reintentar</button>
+      <button class="modal-btn secondary" style="margin-top:8px" onclick="closeModal('ai')">Cerrar</button>
+      <div class="modal-spacer"></div>`;
+  }
+}
+
+function applyAndClose(resetWeek){
+  if(!pendingPlan) return;
+  currentPlan = pendingPlan;
+  savePlan(currentPlan);
+  if(resetWeek){
+    state.series  = {};
+    state.recOpt  = {};
+    state.meals   = {};
+    currentPlan.dias.forEach(d => {
+      state.section[d.id] = 0;
+      state.meals[d.id]   = {};
+      state.reports[d.id] = {weight:'',sleep:7,energy:7,fatigue:3,digest:'Buena/Ligera',joints:'Flexible/Bien',pisq:0,padd:0,obs:''};
+    });
+    saveState();
+  }
+  closeModal('ai');
+  render();
+  toast(resetWeek ? '✅ Nueva semana activada' : '✅ Plan actualizado');
+}
+
+async function startAIReview(){
+  renderAIModal('loading', 0);
+  await delay(300);
+  renderAIModal('loading', 1);
+
+  const weekReport = buildWeekReport();
+  const planJSON   = JSON.stringify(currentPlan, null, 2);
+
+  renderAIModal('loading', 2);
+
+  try{
+    const result = await callClaude(weekReport, planJSON);
+    renderAIModal('loading', 3);
+    await delay(500);
+    pendingPlan = result.plan;
+    renderAIModal('success', result);
+  }catch(err){
+    renderAIModal('error', err.message);
+  }
+}
+
+function delay(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+function buildWeekReport(){
+  const mealNames = {breakfast:'Desayuno',lunch:'Comida',snack:'Merienda Pre-Entreno',dinner:'Cena',sunday:'Comida Post-Partido',carbload:'Cena Carga Hidratos Sábado'};
+  const payload = {
+    semana: getWeekLabel(),
+    athlete: {nombre:'Central Élite', posicion:'Central diestro', peso_ref_kg:90, altura_cm:186},
+    dias: {}
+  };
+  currentPlan.dias.forEach(d => {
+    const dayId = d.id;
+    const r   = state.reports[dayId] || {};
+    const exs = currentPlan.ejercicios[dayId] || [];
+    const ejercicios = {};
+    exs.forEach(e => {
+      const series = state.series[dayId]?.[e.id] || [];
+      ejercicios[e.title] = series.map((s,i) => ({
+        serie: i+1,
+        ...(e.type==='weight'||e.type==='band' ? {kg:s.kg||'-'} : {}),
+        completada: s.done
+      }));
+    });
+    const comidas = {};
+    const dm = state.meals[dayId] || {};
+    Object.keys(dm).forEach(mt => {
+      const idx = dm[mt];
+      if(idx >= 0 && currentPlan.comidas[mt]){
+        comidas[mealNames[mt]||mt] = currentPlan.comidas[mt].opts[idx]?.t || '-';
+      }
+    });
+    payload.dias[dayId] = {
+      tipo_sesion: d.type,
+      ejercicios: Object.keys(ejercicios).length ? ejercicios : null,
+      comidas_elegidas: Object.keys(comidas).length ? comidas : null,
+      reporte: {
+        peso_kg: r.weight||null,
+        calidad_sueno: r.sleep,
+        nivel_energia: r.energy,
+        fatiga_acumulada: r.fatigue,
+        digestion: r.digest,
+        sensacion_articular: r.joints,
+        dolor_isquiotibial_izq: r.pisq,
+        dolor_aductor_izq: r.padd,
+        observaciones: r.obs||null
+      }
+    };
+  });
+  return payload;
+}
+
+async function callClaude(weekReport, planJSON){
+  const systemPrompt = `Eres el preparador físico y nutricionista personal de un futbolista amateur de élite.
+Perfil: central diestro, 90 kg, 186 cm. RECAÍDA RECIENTE — lesiones activas: rotura isquiotibial izquierdo en recuperación, historial múltiple de roturas de aductor izquierdo (4 roturas en pierna izquierda). Intolerante al gluten (celíaco 100%), alérgico a las nueces (puede almendras y pistachos), alérgico al melocotón. Juega cada domingo a las 12:00h. Entrenamientos de equipo: martes, jueves y viernes a las 21:00h (fin entreno 23:00h — cenas deben ser ultra ligeras y digestivas). Tiene acceso a gimnasio con mancuernas, barra, banco y bandas.
+
+Analiza el reporte semanal y el plan actual. Devuelve el plan ACTUALIZADO para la próxima semana basándote en los datos reales.
+
+REGLAS ESTRICTAS:
+1. Responde ÚNICAMENTE con el objeto JSON, sin ningún texto adicional, sin markdown, sin bloques de código.
+2. El JSON debe ser parseable directamente con JSON.parse().
+3. El campo "type" de ejercicios solo puede ser: "weight", "time" o "band".
+4. Los valores de "icls" solo pueden ser: "ci-g", "ci-b", "ci-r" o "ci-a".
+5. Los valores de "cls" en notas solo pueden ser: "ni", "nw", "nd" o "na".
+6. Los ids de ejercicios deben ser strings únicos de 3-4 caracteres alfanuméricos.
+7. Mantén siempre los 7 días con sus tipos correctos (lunes=rec, martes=gym, miercoles=rest, jueves=gym, viernes=team, sabado=gym, domingo=match).
+8. Las comidas SIEMPRE sin gluten, sin nueces, sin melocotón.
+9. Progresión de cargas basada en los kg y completitud registrados.
+10. Si dolor isquio o aductor > 4, reduce carga de pierna y añade nota de advertencia.
+11. Las cenas de días de entreno deben ser SIEMPRE ultra digestivas (purés, pescados al horno, etc.) ya que el entreno acaba a las 23:00h.
+
+Formato EXACTO de respuesta:
+{
+  "mensaje_entrenador": "Mensaje motivacional personalizado de 2-3 frases basado en los datos reales de esta semana",
+  "resumen_cambios": "Qué ejercicios, cargas o comidas has cambiado y por qué, en 2-3 frases técnicas",
+  "plan": {
+    "dias": [
+      {"id":"lunes","abbr":"LUN","label":"Recuperación","type":"rec","cls":""},
+      {"id":"martes","abbr":"MAR","label":"Tren Inf.","type":"gym","cls":""},
+      {"id":"miercoles","abbr":"MIÉ","label":"Descanso","type":"rest","cls":""},
+      {"id":"jueves","abbr":"JUE","label":"Tren Sup.","type":"gym","cls":""},
+      {"id":"viernes","abbr":"VIE","label":"Táctico","type":"team","cls":""},
+      {"id":"sabado","abbr":"SÁB","label":"Activación","type":"gym","cls":""},
+      {"id":"domingo","abbr":"DOM","label":"PARTIDO","type":"match","cls":"match-day"}
+    ],
+    "ejercicios": {
+      "martes": [{"id":"xxx","ico":"emoji","icls":"ci-g","title":"Nombre","meta":"X series · Y reps · descripción","series":3,"type":"weight","rest":"90 seg","note":{"txt":"texto con negrita opcional","cls":"ni"}}],
+      "jueves": [],
+      "sabado": []
+    },
+    "comidas": {
+      "breakfast": {"lbl":"🍳 Desayuno — Alta Proteína","opts":[{"t":"Nombre","d":"Descripción detallada."}]},
+      "lunch":    {"lbl":"🍚 Comida — Carga de Carbohidratos","opts":[]},
+      "snack":    {"lbl":"🍌 Merienda Pre-Entreno — 19:30 h","opts":[]},
+      "dinner":   {"lbl":"🐟 Cena Post-Entreno — Ultra Digestiva (post 23:00h)","opts":[]},
+      "sunday":   {"lbl":"🏆 Comida Post-Partido — Recarga de Glucógeno","opts":[]}
+    },
+    "calentamiento": [{"n":1,"txt":"Músculo — descripción"}]
+  }
+}`;
+
+  const userMsg = `REPORTE DE LA SEMANA:\n${JSON.stringify(weekReport, null, 2)}\n\nPLAN ACTUAL (para referencia de progresión):\n${planJSON}`;
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system: systemPrompt,
+      messages: [{role:'user', content: userMsg}]
+    })
+  });
+
+  if(!response.ok){
+    let errMsg = `Error HTTP ${response.status}`;
+    try{
+      const errData = await response.json();
+      errMsg = errData.error?.message || errMsg;
+    }catch(e){}
+    throw new Error(errMsg);
+  }
+
+  const data = await response.json();
+  const text = data.content?.map(b=>b.type==='text'?b.text:'').join('');
+  if(!text) throw new Error('Claude no devolvió contenido. Inténtalo de nuevo.');
+
+  const clean = text.replace(/^```json\s*/,'').replace(/\s*```$/,'').trim();
+
+  let parsed;
+  try{ parsed = JSON.parse(clean); }
+  catch(e){ throw new Error('No se pudo leer la respuesta de Claude. Inténtalo de nuevo.'); }
+
+  if(!parsed.plan || !parsed.plan.ejercicios || !parsed.plan.comidas){
+    throw new Error('La respuesta de Claude está incompleta. Inténtalo de nuevo.');
+  }
+
+  return parsed;
+}
+
+/* ═══════════════════════════════════════
+   SECTION LABELS
+═══════════════════════════════════════ */
+
+const SECTION_LABELS = {
+  rec:   ['Recuperación','Combustible','Reporte'],
+  gym:   ['Protocolo + Ejercicios','Combustible','Reporte'],
+  rest:  ['Descanso','Combustible','Reporte'],
+  team:  ['Equipo','Combustible','Reporte'],
+  match: ['Partido','Combustible','Reporte'],
+};
+
+/* ═══════════════════════════════════════
+   STATE
+═══════════════════════════════════════ */
+
+const state = {
+  day:'martes',
+  section:{},
+  series:{},
+  recOpt:{},
+  meals:{},
+  reports:{},
+};
+
+currentPlan.dias.forEach(d => {
+  state.section[d.id] = 0;
+  state.meals[d.id]   = {};
+  state.reports[d.id] = {weight:'',sleep:7,energy:7,fatigue:3,digest:'Buena/Ligera',joints:'Flexible/Bien',pisq:0,padd:0,obs:''};
+});
+
+function getExercises(day){ return currentPlan.ejercicios[day]||[]; }
+
+function getSeries(day, exId, count){
+  if(!state.series[day]) state.series[day]={};
+  if(!state.series[day][exId]){
+    state.series[day][exId] = Array.from({length:count}, ()=>({kg:'',done:false}));
+  }
+  return state.series[day][exId];
+}
+
+/* ═══════════════════════════════════════
+   RENDER — DAY NAV
+═══════════════════════════════════════ */
+
+function renderDayNav(){
+  const el = document.getElementById('day-nav');
+  el.innerHTML = currentPlan.dias.map(d=>`
+    <div class="day-btn ${d.cls} ${state.day===d.id?'active':''}" onclick="setDay('${d.id}')">
+      <span class="da">${d.abbr}</span>
+      <span class="dt">${d.label}</span>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════
+   RENDER — SECTION NAV
+═══════════════════════════════════════ */
+
+function renderSectionNav(){
+  const d   = currentPlan.dias.find(x=>x.id===state.day);
+  const lbls = SECTION_LABELS[d.type];
+  const cur  = state.section[state.day]||0;
+  document.getElementById('section-nav').innerHTML =
+    lbls.map((l,i)=>`<button class="sec-btn ${cur===i?'active':''}" onclick="setSec(${i})">${l}</button>`).join('');
+}
+
+/* ═══════════════════════════════════════
+   RENDER — MAIN CONTENT
+═══════════════════════════════════════ */
+
+function renderMain(){
+  const dayId  = state.day;
+  const dayDef = currentPlan.dias.find(x=>x.id===dayId);
+  const sec    = state.section[dayId]||0;
+  const el     = document.getElementById('main');
+
+  if(sec===2){ el.innerHTML=renderReport(dayId); bindReport(dayId); return; }
+  if(sec===1){ el.innerHTML=renderMeals(dayId,dayDef.type); return; }
+  switch(dayDef.type){
+    case 'gym':   el.innerHTML=renderGym(dayId);   break;
+    case 'rec':   el.innerHTML=renderRec(dayId);   break;
+    case 'rest':  el.innerHTML=renderRest();        break;
+    case 'team':  el.innerHTML=renderTeam(dayId);  break;
+    case 'match': el.innerHTML=renderMatch();       break;
+  }
+}
+
+/* ─── GYM DAY ─── */
+function renderGym(day){
+  const exs = getExercises(day);
+  const dayLabel = {martes:'Tren Inferior',jueves:'Tren Superior + Core',sabado:'Activación Neural Express'}[day]||'';
+
+  let html=`<div class="dhdr">
+    <div class="dhdr-title">${{martes:'Martes',jueves:'Jueves',sabado:'Sábado'}[day]||day}</div>
+    <div class="dhdr-sub">${dayLabel}</div>
+    <div class="dtags">
+      <span class="dtag tg">Gimnasio</span>
+      ${day!=='sabado'?'<span class="dtag tb">Equipo · 21:00 h</span>':'<span class="dtag ta">Activación Pre-Partido</span>'}
+      <span class="dtag tr">⚠ Zona Roja Pierna Izq</span>
+    </div>
+  </div>`;
+
+  html+=`<div class="card" id="c-warmup">
+    <div class="card-hdr" onclick="toggleCard('c-warmup')">
+      <div class="card-hdr-l">
+        <div class="ci ci-a">🔥</div>
+        <div><div class="card-title">Protocolo de Entrada al Gimnasio</div><div class="card-meta">Foam roller + Movilidad dinámica · 6 min</div></div>
+      </div>
+      <span class="chev">⌄</span>
+    </div>
+    <div class="card-body">
+      <div class="note nd" style="margin-top:0;margin-bottom:12px">⚠ Fase obligatoria antes de cualquier carga. No saltársela nunca.</div>
+      ${currentPlan.calentamiento.map(s=>`<div class="pstep"><div class="pnum">${s.n}</div><div class="ptxt">${s.txt}</div></div>`).join('')}
+    </div>
+  </div>`;
+
+  exs.forEach(ex=>{
+    const series = getSeries(day, ex.id, ex.series);
+    const done   = series.filter(s=>s.done).length;
+    html+=`<div class="card ${done===ex.series?'open':''}" id="c-${ex.id}">
+      <div class="card-hdr" onclick="toggleCard('c-${ex.id}')">
+        <div class="card-hdr-l">
+          <div class="ci ${ex.icls}">${ex.ico}</div>
+          <div>
+            <div class="card-title">${ex.title}</div>
+            <div class="card-meta">${ex.meta}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <span style="font-size:11px;color:${done===ex.series?'var(--ac)':'var(--tx3)'};font-weight:700">${done}/${ex.series}</span>
+          <span class="chev">⌄</span>
+        </div>
+      </div>
+      <div class="card-body">
+        ${ex.note?`<div class="note ${ex.note.cls}">${ex.note.txt}</div>`:''}
+        <div style="margin-top:${ex.note?'0':'4px'}">
+          ${renderSeriesTable(day, ex.id, ex.series, ex.type, ex.rest)}
+        </div>
+      </div>
+    </div>`;
+  });
+
+  if(day!=='sabado'){
+    html+=`<div class="note ni" style="margin-top:4px"><span>🏟</span> Entrenamiento equipo a las <b>21:00 h</b> (fin 23:00 h). La merienda pre-entreno es a las <b>19:30 h</b>.</div>`;
+    html+=`<div class="note nd" style="margin-top:8px"><span>⚠</span> Al terminar (23:00 h): <b>PROHIBIDO estirar pasivamente</b> el isquio o aductor izquierdo. Movilidad articular suave solo. Batido Whey + fruta en el vestuario.</div>`;
+  } else {
+    html+=`<div class="note na" style="margin-top:8px"><span>🍚</span> Esta noche: <b>Carga de Hidratos pre-partido.</b> Comida copiosa en arroz, pasta SG o patata. El músculo necesita el glucógeno cargado para mañana.</div>`;
+  }
+
+  return html;
+}
+
+function renderSeriesTable(day, exId, count, type, rest){
+  const series  = getSeries(day, exId, count);
+  const showKg  = type==='weight'||type==='band';
+  const isBand  = type==='band';
+
+  let html=`<table class="stbl">
+    <tr>
+      <th>#</th>
+      ${showKg?`<th>${isBand?'Nivel':'KG'}</th>`:''}
+      <th>${type==='time'?'Seg':'Reps'}</th>
+      <th>✓</th>
+    </tr>`;
+
+  series.forEach((s,i)=>{
+    html+=`<tr>
+      <td>${i+1}</td>
+      ${showKg?`<td><input class="si" type="text" inputmode="decimal" placeholder="${isBand?'M/L/XL':'0'}" value="${s.kg}" onchange="updateSerie('${day}','${exId}',${i},'kg',this.value)"></td>`:''}
+      <td><input class="si" type="text" inputmode="decimal" placeholder="—" value="${s.reps||''}" onchange="updateSerie('${day}','${exId}',${i},'reps',this.value)"></td>
+      <td><div class="done-btn ${s.done?'chk':''}" onclick="toggleSerie('${day}','${exId}',${i})">${s.done?'✓':''}</div></td>
+    </tr>`;
+  });
+
+  html += '</table>';
+  if(rest) html+=`<div style="margin-top:10px;font-size:11px;color:var(--tx3);display:flex;align-items:center;gap:6px"><span>⏱</span> Descanso entre series: <b style="color:var(--tx2)">${rest}</b></div>`;
+  return html;
+}
+
+/* ─── RECOVERY DAY (LUNES) ─── */
+function renderRec(day){
+  const cur=state.recOpt[day]??-1;
+  return `<div class="dhdr">
+    <div class="dhdr-title">Lunes</div>
+    <div class="dhdr-sub">Recuperación Compensatoria Post-Partido</div>
+    <div class="dtags"><span class="dtag tg">Regeneración Tisular</span><span class="dtag tr">⚠ Post-Recaída</span><span class="dtag tn">Sin impacto</span></div>
+  </div>
+  <div class="note nd" style="margin-top:0;margin-bottom:12px"><span>⚠</span> Protocolo obligatorio tras haber jugado. La pierna izquierda necesita drenaje activo para evitar que la cicatriz cure rígida.</div>
+  <div class="rec-opt ${cur===0?'sel':''}" onclick="setRecOpt('${day}',0)">
+    <div class="rdot"></div>
+    <div class="rec-body">
+      <div class="rec-title">🏊 Opción A — Protocolo Completo de Piscina (PRIORITARIO)</div>
+      <div class="rec-desc">20-25 minutos totales. La opción recomendada por el preparador para después de una recaída.</div>
+    </div>
+  </div>
+  ${cur===0?`<div class="card open" id="c-piscina" style="margin-left:28px;margin-bottom:10px">
+    <div class="card-hdr" onclick="toggleCard('c-piscina')">
+      <div class="card-hdr-l"><div class="ci ci-b">🌊</div><div><div class="card-title">Desglose del Protocolo de Piscina</div><div class="card-meta">3 fases · 20-25 min totales</div></div></div>
+      <span class="chev">⌄</span>
+    </div>
+    <div class="card-body">
+      <div class="pstep"><div class="pnum">F1</div><div class="ptxt"><b>10 min — Marcha Acuática</b> (agua al pecho). Exagerar la zancada: <b>hacia delante</b> levantando rodillas, <b>hacia atrás</b> (clave para activar el isquio de forma segura sin impacto) y <b>de lado</b> para los aductores.</div></div>
+      <div class="pstep"><div class="pnum">F2</div><div class="ptxt"><b>10 min — Natación Suave a Crol o de Espaldas.</b> Ritmo muy fluido. <span style="color:var(--red);font-weight:600">PROHIBIDO nadar a braza o estilo rana</span> — el latigazo de piernas agrede al aductor.</div></div>
+      <div class="pstep"><div class="pnum">F3</div><div class="ptxt"><b>5 min — Movilidad de Pierna Izquierda</b> agarrado al bordillo. Balanceos suaves adelante/atrás con la pierna izquierda. Sin forzar nunca el rango máximo.</div></div>
+      <div class="note nw" style="margin-top:10px">💧 Beneficios: la flotabilidad elimina el peso de 90 kg sobre la cicatriz, la presión hidrostática drena el edema y la resistencia del agua despierta el isquio débil sin impacto mecánico.</div>
+    </div>
+  </div>`:''}
+  <div class="rec-opt ${cur===1?'sel':''}" onclick="setRecOpt('${day}',1)">
+    <div class="rdot"></div>
+    <div class="rec-body">
+      <div class="rec-title">🚴 Opción B — Bici Estática Profesional</div>
+      <div class="rec-desc">20-25 min de pedaleo continuo, resistencia muy baja, cadencia 80-90 RPM. Sin impacto: bombea sangre oxigenada para limpiar tejidos musculares.</div>
+    </div>
+  </div>
+  <div class="div"></div>
+  <div class="card" id="c-press">
+    <div class="card-hdr" onclick="toggleCard('c-press')">
+      <div class="card-hdr-l"><div class="ci ci-b">💜</div><div><div class="card-title">Presoterapia Nocturna (Obligatoria hoy)</div><div class="card-meta">25 min · 60-80 mmHg</div></div></div>
+      <span class="chev">⌄</span>
+    </div>
+    <div class="card-body">
+      <div class="ptxt">Botas de presoterapia a <b>presión moderada (60-80 mmHg)</b> durante 25 minutos en casa por la noche.</div>
+      <div style="margin-top:10px" class="ptxt">Pistola de masaje de percusión <b>suave</b> solo en zonas sin dolor: <b>gemelos, cuádriceps y glúteos únicamente</b>. No usar sobre la cicatriz del isquio ni el aductor izquierdo.</div>
+    </div>
+  </div>`;
+}
+
+/* ─── REST DAY (MIÉRCOLES) ─── */
+function renderRest(){
+  return `<div class="dhdr"><div class="dhdr-title">Miércoles</div><div class="dhdr-sub">Descanso Total de Piernas</div>
+    <div class="dtags"><span class="dtag tn">Regeneración Tisular</span><span class="dtag tg">En Casa</span></div>
+  </div>
+  <div class="hero rest-day">
+    <div class="hero-ico">🛌</div>
+    <div class="hero-ttl">Descanso Total</div>
+    <div class="hero-sub">Día clave de regeneración tisular. Ninguna carga sobre piernas.<br>El tejido conectivo y las cicatrices musculares se consolidan durante el reposo.</div>
+  </div>
+  <div class="note na"><span>💡</span> Aprovecha para hidratarte bien, estirar solo cuello y brazos de forma pasiva suave, y preparar mentalmente el bloque Jueves-Viernes-Partido.</div>`;
+}
+
+/* ─── TEAM DAY (VIERNES) ─── */
+function renderTeam(day){
+  return `<div class="dhdr"><div class="dhdr-title">Viernes</div><div class="dhdr-sub">Fútbol Táctico y Estrategia</div>
+    <div class="dtags"><span class="dtag tb">Equipo · 21:00–23:00 h</span><span class="dtag tn">Sin Gimnasio Extra</span></div>
+  </div>
+  <div class="hero rest" style="padding:22px;text-align:left">
+    <div style="font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:1px;margin-bottom:12px">🏟 SESIÓN DE EQUIPO — 21:00 h a 23:00 h</div>
+    <div style="font-size:12px;color:var(--tx2);line-height:1.7">
+      <div style="margin-bottom:8px">Sesión táctica y estratégica con el equipo. Posicionamiento defensivo, ensayo de jugadas a balón parado y análisis del rival del domingo.</div>
+      <div style="margin-bottom:8px">Como <b>central diestro de choque</b>, trabaja mentalmente los duelos individuales y las coberturas con el lateral izquierdo.</div>
+      <div>⏰ Merienda pre-entreno a las <b>19:30 h</b> antes de salir de casa.</div>
+    </div>
+  </div>
+  <div class="note nd"><span>⚠</span> Post-entrenamiento (23:00 h): <b>PROHIBIDO estiramiento pasivo</b> agresivo en isquio y aductor izquierdo. Movilidad articular suave únicamente + Batido Whey con agua.</div>
+  <div style="margin-top:10px" class="note na"><span>🍽</span> Cena <b>ultra ligera y digestiva</b> al llegar a casa (23:00–23:30 h). Mañana es Sábado de <b>activación neural</b> y por la noche la <b>carga de hidratos</b> pre-partido.</div>`;
+}
+
+/* ─── MATCH DAY (DOMINGO) ─── */
+function renderMatch(){
+  return `<div class="dhdr"><div class="dhdr-title">Domingo</div><div class="dhdr-sub">Día de Partido Oficial</div>
+    <div class="dtags"><span class="dtag ta">Partido · 12:00 h</span><span class="dtag tg">Carga Máxima</span></div>
+  </div>
+  <div class="hero match">
+    <div class="match-time">12:00</div>
+    <div class="match-lbl">Hora de Inicio del Partido</div>
+  </div>
+  <div class="card" id="c-pre">
+    <div class="card-hdr" onclick="toggleCard('c-pre')">
+      <div class="card-hdr-l"><div class="ci ci-g">⚡</div><div><div class="card-title">Pre-Partido</div><div class="card-meta">Activación y calentamiento</div></div></div>
+      <span class="chev">⌄</span>
+    </div>
+    <div class="card-body">
+      <div class="ptxt" style="margin-bottom:10px">Desayuno <b>3-3.5 h antes</b> (09:00-09:30 h): opciones de alta energía y digestión rápida.</div>
+      <div class="pstep"><div class="pnum">1</div><div class="ptxt">Calentamiento progresivo. Foam roller suave en gemelos, glúteos y cuádriceps.</div></div>
+      <div class="pstep"><div class="pnum">2</div><div class="ptxt">Activación dinámica: Monster Walks, movilidad de cadera 90-90, sentadillas controladas.</div></div>
+      <div class="pstep"><div class="pnum">3</div><div class="ptxt">Trabajos específicos de salida de balón y anticipación. Activación mental.</div></div>
+    </div>
+  </div>
+  <div class="card" id="c-post">
+    <div class="card-hdr" onclick="toggleCard('c-post')">
+      <div class="card-hdr-l"><div class="ci ci-b">🔄</div><div><div class="card-title">Post-Partido — Protocolo Inmediato</div><div class="card-meta">Vestuario · 0-20 min después</div></div></div>
+      <span class="chev">⌄</span>
+    </div>
+    <div class="card-body">
+      <div class="note nd" style="margin-top:0;margin-bottom:12px">⚠ <b>PROHIBIDO</b> estiramientos pasivos agresivos en isquio y aductor izquierdo al terminar.</div>
+      <div class="pstep"><div class="pnum">1</div><div class="ptxt">Movilidad articular <b>dinámica suave y fluida</b>. Nada de tirones.</div></div>
+      <div class="pstep"><div class="pnum">2</div><div class="ptxt">Batido de proteína <b>Whey con agua</b> + fruta madura en el vestuario de inmediato.</div></div>
+      <div class="pstep"><div class="pnum">3</div><div class="ptxt">Ducha fría-templada. Lunes por la tarde: <b>recuperación activa obligatoria</b> (bici o piscina).</div></div>
+    </div>
+  </div>`;
+}
+
+/* ─── MEALS ─── */
+function renderMeals(day, type){
+  const mealTypes = type==='match'
+    ? ['breakfast','sunday']
+    : type==='rec'||type==='rest'
+      ? ['breakfast','lunch','dinner']
+      : type==='team'
+        ? ['breakfast','lunch','snack','dinner']
+        : day==='sabado'
+          ? ['breakfast','lunch','snack','carbload']
+          : ['breakfast','lunch','snack','dinner'];
+
+  const dayMeals = state.meals[day]||{};
+  let html=`<div class="dhdr"><div class="dhdr-title">Combustible</div><div class="dhdr-sub">Selecciona tus opciones del día · 100% Sin Gluten</div></div>`;
+
+  mealTypes.forEach(mt=>{
+    const def = currentPlan.comidas[mt];
+    if(!def) return;
+    const sel = dayMeals[mt]??-1;
+    html+=`<div class="meal-grp"><div class="meal-lbl">${def.lbl}</div>`;
+    def.opts.forEach((o,i)=>{
+      html+=`<div class="meal-opt ${sel===i?'sel':''}" onclick="selectMeal('${day}','${mt}',${i})">
+        <div class="mdot"></div>
+        <div><div class="mot">${o.t}</div><div class="mod">${o.d}</div></div>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  return html;
+}
+
+/* ─── REPORT ─── */
+function renderReport(day){
+  const r=state.reports[day];
+  return `<div class="dhdr"><div class="dhdr-title">Reporte Clínico</div><div class="dhdr-sub">Registro diario para el preparador</div></div>
+
+  <div class="rpt-sec">
+    <div class="rpt-head">Básicos</div>
+    <div class="weight-row">
+      <label>Peso corporal</label>
+      <input class="weight-in" type="text" inputmode="decimal" placeholder="90.0" value="${r.weight}" id="rpt-weight" onchange="updateRpt('${day}','weight',this.value)">
+      <span class="weight-unit">kg</span>
+    </div>
+    <div class="rpt-row">
+      <div class="rpt-lbl-row"><span class="rpt-lbl-txt">Calidad del Sueño</span><span class="rpt-val" id="rv-sleep">${r.sleep}</span></div>
+      <input type="range" min="1" max="10" step="1" value="${r.sleep}" oninput="sliderRpt('${day}','sleep','rv-sleep',this.value,false)">
+    </div>
+    <div class="rpt-row">
+      <div class="rpt-lbl-row"><span class="rpt-lbl-txt">Nivel de Energía</span><span class="rpt-val" id="rv-energy">${r.energy}</span></div>
+      <input type="range" min="1" max="10" step="1" value="${r.energy}" oninput="sliderRpt('${day}','energy','rv-energy',this.value,false)">
+    </div>
+    <div class="rpt-row">
+      <div class="rpt-lbl-row"><span class="rpt-lbl-txt">Fatiga Acumulada</span><span class="rpt-val" id="rv-fatigue">${r.fatigue}</span></div>
+      <input type="range" min="1" max="10" step="1" value="${r.fatigue}" oninput="sliderRpt('${day}','fatigue','rv-fatigue',this.value,false)">
+    </div>
+  </div>
+
+  <div class="rpt-sec">
+    <div class="rpt-head">Estado General</div>
+    <div class="rpt-row">
+      <div class="rpt-lbl-row" style="margin-bottom:6px"><span class="rpt-lbl-txt">Estado de Digestión</span></div>
+      <select class="rpt-sel" onchange="updateRpt('${day}','digest',this.value)">
+        ${['Buena/Ligera','Pesada','Inflamación/Gases'].map(o=>`<option value="${o}" ${r.digest===o?'selected':''}>${o}</option>`).join('')}
+      </select>
+    </div>
+    <div class="rpt-row">
+      <div class="rpt-lbl-row" style="margin-bottom:6px"><span class="rpt-lbl-txt">Sensación Articular</span></div>
+      <select class="rpt-sel" onchange="updateRpt('${day}','joints',this.value)">
+        ${['Flexible/Bien','Rigidez Matutina','Molestia/Dolor'].map(o=>`<option value="${o}" ${r.joints===o?'selected':''}>${o}</option>`).join('')}
+      </select>
+    </div>
+  </div>
+
+  <div class="rpt-sec">
+    <div class="rpt-head" style="color:var(--red)">Control de Dolor — Zonas Críticas</div>
+    <div class="note nd" style="margin-top:0;margin-bottom:16px"><span>⚠</span> Registra cualquier molestia aunque sea leve. El preparador necesita estos datos para ajustar las cargas.</div>
+    <div class="rpt-row">
+      <div class="rpt-lbl-row"><span class="rpt-lbl-txt">🦵 Isquiotibial Izquierdo<br><small style="color:var(--tx3);font-size:10px">(Cicatriz Semana Santa)</small></span><span class="rpt-val danger" id="rv-pisq">${r.pisq}</span></div>
+      <input type="range" class="dr" min="0" max="10" step="1" value="${r.pisq}" oninput="sliderRpt('${day}','pisq','rv-pisq',this.value,true)">
+    </div>
+    <div class="rpt-row">
+      <div class="rpt-lbl-row"><span class="rpt-lbl-txt">🦵 Aductor Izquierdo<br><small style="color:var(--tx3);font-size:10px">(Historial de roturas)</small></span><span class="rpt-val danger" id="rv-padd">${r.padd}</span></div>
+      <input type="range" class="dr" min="0" max="10" step="1" value="${r.padd}" oninput="sliderRpt('${day}','padd','rv-padd',this.value,true)">
+    </div>
+  </div>
+
+  <div class="rpt-sec">
+    <div class="rpt-head">Observaciones del Muro Defensivo</div>
+    <textarea class="rpt-ta" placeholder="Sensaciones en giros, pases largos, coberturas, duelos aéreos, anticipaciones... cualquier detalle relevante del día." onchange="updateRpt('${day}','obs',this.value)">${r.obs}</textarea>
+  </div>
+
+  <button class="save-btn" onclick="saveReport('${day}')">Guardar Reporte del Día</button>`;
+}
+
+function bindReport(day){
+  // inputs already use onchange/oninput
+}
+
+/* ═══════════════════════════════════════
+   INTERACTIONS
+═══════════════════════════════════════ */
+
+function toggleCard(id){
+  const el=document.getElementById(id);
+  if(el) el.classList.toggle('open');
+}
+
+/* ═══════════════════════════════════════
+   EXPORT JSON
+═══════════════════════════════════════ */
+
+function exportJSON(){
+  const mealNames={
+    breakfast:'Desayuno',lunch:'Comida',snack:'Merienda Pre-Entreno',
+    dinner:'Cena',sunday:'Comida Post-Partido',carbload:'Cena Carga Hidratos Sábado'
+  };
+
+  const payload={
+    exportDate: new Date().toISOString(),
+    athlete: {nombre:'Central Élite',posicion:'Central diestro',peso_ref_kg:90,altura_cm:186},
+    semana: getWeekLabel(),
+    dias: {}
+  };
+
+  currentPlan.dias.forEach(d=>{
+    const dayId=d.id;
+    const r=state.reports[dayId];
+    const ex=currentPlan.ejercicios[dayId]||[];
+    const ejercicios={};
+    ex.forEach(e=>{
+      const series=state.series[dayId]?.[e.id]||[];
+      ejercicios[e.title]=series.map((s,i)=>({
+        serie:i+1,
+        ...(e.type==='weight'||e.type==='band'?{kg:s.kg||'-'}:{}),
+        completada:s.done
+      }));
+    });
+
+    const comidas={};
+    const dm=state.meals[dayId]||{};
+    Object.keys(dm).forEach(mt=>{
+      const idx=dm[mt];
+      if(idx>=0&&currentPlan.comidas[mt]){
+        comidas[mealNames[mt]||mt]=currentPlan.comidas[mt].opts[idx]?.t||'-';
+      }
+    });
+
+    payload.dias[dayId]={
+      tipo_sesion:d.type,
+      recuperacion_activa:state.recOpt[dayId]!=null?['Bici Estática','Trabajo en Piscina'][state.recOpt[dayId]]||null:null,
+      ejercicios:Object.keys(ejercicios).length?ejercicios:null,
+      combustible:Object.keys(comidas).length?comidas:null,
+      reporte_clinico:{
+        peso_kg:r.weight||null,
+        calidad_sueno:r.sleep,
+        nivel_energia:r.energy,
+        fatiga_acumulada:r.fatigue,
+        digestion:r.digest,
+        sensacion_articular:r.joints,
+        dolor_isquiotibial_izq:r.pisq,
+        dolor_aductor_izq:r.padd,
+        observaciones_defensivas:r.obs||null
+      }
+    };
+  });
+
+  const json=JSON.stringify(payload,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`reporte-central-elite-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Reporte .JSON exportado ✓');
+}
+
+function getWeekLabel(){
+  const now=new Date();
+  const mon=new Date(now);
+  mon.setDate(now.getDate()-((now.getDay()+6)%7));
+  const sun=new Date(mon);sun.setDate(mon.getDate()+6);
+  const fmt=d=>d.toLocaleDateString('es-ES',{day:'numeric',month:'long'});
+  return `Semana del ${fmt(mon)} al ${fmt(sun)} de ${sun.getFullYear()}`;
+}
+
+/* ═══════════════════════════════════════
+   TOAST
+═══════════════════════════════════════ */
+
+let toastTimer=null;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),2600);
+}
+
+/* ═══════════════════════════════════════
+   LOCALSTORAGE PERSISTENCE
+═══════════════════════════════════════ */
+
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify({
+      series:state.series,
+      recOpt:state.recOpt,
+      meals:state.meals,
+      reports:state.reports,
+      section:state.section,
+      day:state.day,
+    }));
+  }catch(e){}
+}
+
+function loadState(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw) return;
+    const saved=JSON.parse(raw);
+    if(saved.series)  state.series=saved.series;
+    if(saved.recOpt)  state.recOpt=saved.recOpt;
+    if(saved.meals)   state.meals=saved.meals;
+    if(saved.section) state.section=saved.section;
+    if(saved.day)     state.day=saved.day;
+    if(saved.reports){
+      currentPlan.dias.forEach(d=>{
+        if(saved.reports[d.id])
+          state.reports[d.id]={...state.reports[d.id],...saved.reports[d.id]};
+      });
+    }
+  }catch(e){}
+}
+
+function setDay(id){
+  state.day=id;
+  saveState();
+  render();
+  setTimeout(()=>{
+    const btn=document.querySelector('.day-btn.active');
+    if(btn) btn.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  },50);
+}
+
+function setSec(i){
+  state.section[state.day]=i;
+  saveState();
+  renderSectionNav();
+  renderMain();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function toggleSerie(day,exId,idx){
+  getSeries(day,exId,null)[idx].done=!getSeries(day,exId,null)[idx].done;
+  saveState();renderMain();
+}
+
+function updateSerie(day,exId,idx,field,val){
+  getSeries(day,exId,null)[idx][field]=val;saveState();
+}
+
+function setRecOpt(day,idx){
+  state.recOpt[day]=state.recOpt[day]===idx?-1:idx;
+  saveState();renderMain();
+}
+
+function selectMeal(day,type,idx){
+  if(!state.meals[day]) state.meals[day]={};
+  state.meals[day][type]=state.meals[day][type]===idx?-1:idx;
+  saveState();renderMain();
+}
+
+function sliderRpt(day,field,valId,val,isDanger){
+  state.reports[day][field]=parseInt(val);
+  const el=document.getElementById(valId);
+  if(el) el.textContent=val;
+  saveState();
+}
+
+function updateRpt(day,field,val){
+  state.reports[day][field]=val;saveState();
+}
+
+function saveReport(day){
+  saveState();toast('Reporte guardado ✓');
+}
+
+/* ═══════════════════════════════════════
+   INIT
+═══════════════════════════════════════ */
+
+function render(){
+  renderDayNav();
+  renderSectionNav();
+  renderMain();
+}
+
+loadState();
+
+if(!localStorage.getItem(STORAGE_KEY)){
+  const dayMap={1:'lunes',2:'martes',3:'miercoles',4:'jueves',5:'viernes',6:'sabado',0:'domingo'};
+  state.day=dayMap[new Date().getDay()]||'martes';
+}
+
+render();
+
+/* ═══════════════════════════════════════
+   PWA — ICONO + MANIFEST + SERVICE WORKER
+═══════════════════════════════════════ */
+(function initPWA(){
+  // Genera el icono de la app vía canvas (verde con "CE")
+  function makeIcon(size){
+    const c=document.createElement('canvas');
+    c.width=c.height=size;
+    const ctx=c.getContext('2d');
+    const r=size*0.22;
+    ctx.beginPath();
+    ctx.moveTo(r,0);ctx.arcTo(size,0,size,size,r);
+    ctx.arcTo(size,size,0,size,r);ctx.arcTo(0,size,0,0,r);
+    ctx.arcTo(0,0,size,0,r);ctx.closePath();
+    ctx.fillStyle='#3a7d0a';ctx.fill();
+    // Círculo decorativo
+    ctx.strokeStyle='rgba(255,255,255,0.2)';
+    ctx.lineWidth=size*0.028;
+    ctx.beginPath();ctx.arc(size/2,size/2,size*0.33,0,Math.PI*2);ctx.stroke();
+    // Texto CE
+    ctx.fillStyle='#ffffff';
+    ctx.font=`700 ${Math.round(size*0.37)}px "Rajdhani",Arial,sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('CE',size/2,size/2);
+    return c.toDataURL('image/png');
+  }
+
+  const i192=makeIcon(192);
+  const i512=makeIcon(512);
+
+  // Apple Touch Icon
+  const al=document.createElement('link');
+  al.rel='apple-touch-icon';al.href=i192;
+  document.head.appendChild(al);
+
+  // Web App Manifest como blob inline
+  const manifest={
+    name:'Central Élite — Sistema de Rendimiento',
+    short_name:'Central Élite',
+    description:'Tu sistema de rendimiento deportivo personal',
+    start_url:'./',scope:'./',
+    display:'standalone',
+    background_color:'#f5f6f8',
+    theme_color:'#3a7d0a',
+    orientation:'portrait-primary',
+    icons:[
+      {src:i192,sizes:'192x192',type:'image/png'},
+      {src:i512,sizes:'512x512',type:'image/png',purpose:'any maskable'}
+    ]
+  };
+  const ml=document.createElement('link');
+  ml.rel='manifest';
+  ml.href=URL.createObjectURL(new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'}));
+  document.head.appendChild(ml);
+
+  // Registra el Service Worker para modo offline
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',()=>{
+      navigator.serviceWorker.register('./sw.js').catch(()=>{});
+    });
+  }
+})();
+</script>
+</body>
+</html>
