@@ -38,12 +38,9 @@ body{
   padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;
 }
 .logo{
-  font-family:'Rajdhani',sans-serif;font-size:19px;font-weight:700;
-  letter-spacing:3px;color:var(--ac);line-height:1.15;flex-shrink:0;
-}
-.logo small{
-  display:block;font-family:'Inter',sans-serif;font-size:9px;
-  letter-spacing:2px;color:var(--tx3);font-weight:500;
+  font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;
+  letter-spacing:3px;color:var(--ac);line-height:1;flex-shrink:0;
+  text-transform:uppercase;
 }
 .topbar-actions{display:flex;gap:6px;align-items:center}
 #export-btn{
@@ -54,6 +51,15 @@ body{
   cursor:pointer;white-space:nowrap;text-transform:uppercase;flex-shrink:0;
 }
 #export-btn:active{opacity:.85;transform:scale(.97)}
+#import-btn{
+  display:flex;align-items:center;gap:5px;
+  background:var(--amb-dim);color:var(--amb);
+  border:1px solid rgba(160,98,10,.25);border-radius:8px;
+  padding:8px 11px;font-family:'Rajdhani',sans-serif;
+  font-size:12px;font-weight:700;letter-spacing:1.5px;
+  cursor:pointer;white-space:nowrap;text-transform:uppercase;flex-shrink:0;
+}
+#import-btn:active{opacity:.85;transform:scale(.97)}
 #ai-btn{
   display:flex;align-items:center;gap:5px;
   background:var(--blu-dim);color:var(--blu);
@@ -430,16 +436,61 @@ input[type=range].dr::-webkit-slider-thumb{background:var(--red);}
 
 .modal-spacer{height:20px}
 </style>
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDeOZU8ICJTjOnj3tqlPrlrrHljdqNPzDM",
+    authDomain: "app-entrenador-personal.firebaseapp.com",
+    databaseURL: "https://app-entrenador-personal-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "app-entrenador-personal",
+    storageBucket: "app-entrenador-personal.firebasestorage.app",
+    messagingSenderId: "23843000918",
+    appId: "1:23843000918:web:c7fb6d82ef1c25796721f7"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+
+  // ── Guardar en Firebase ──
+  window.fbSave = async function(key, data){
+    try{
+      await set(ref(db, 'central_elite/' + key), data);
+    }catch(e){ console.warn('Firebase save error:', e); }
+  };
+
+  // ── Cargar desde Firebase ──
+  window.fbLoad = async function(key){
+    try{
+      const snap = await get(ref(db, 'central_elite/' + key));
+      return snap.exists() ? snap.val() : null;
+    }catch(e){ console.warn('Firebase load error:', e); return null; }
+  };
+
+  // ── Sincronización en tiempo real ──
+  window.fbSync = function(key, callback){
+    onValue(ref(db, 'central_elite/' + key), (snap)=>{
+      if(snap.exists()) callback(snap.val());
+    });
+  };
+
+  // Señal de que Firebase está listo
+  window.firebaseReady = true;
+  window.dispatchEvent(new Event('firebase-ready'));
+</script>
 </head>
 <body>
 
 <div id="topbar">
-  <div class="logo">CENTRAL <br><small>ÉLITE · 90KG RENDIMIENTO</small></div>
+  <div class="logo">CENTRAL ÉLITE</div>
   <div class="topbar-actions">
-    <button id="ai-btn" onclick="openAIReview()">🤖 IA Claude</button>
-    <button id="settings-btn" onclick="openSettings()" title="Configuración">⚙</button>
+    <button id="import-btn" onclick="triggerImport()" title="Importar plan actualizado">↑ Plan</button>
     <button id="export-btn" onclick="exportJSON()">↓ JSON</button>
+    <button id="settings-btn" onclick="openSettings()" title="Configuración">⚙</button>
   </div>
+  <input type="file" id="import-file" accept=".json" style="display:none" onchange="importPlan(event)">
 </div>
 
 <div id="day-nav"></div>
@@ -597,12 +648,25 @@ function loadCurrentPlan(){
 
 function savePlan(plan){
   try{ localStorage.setItem(PLAN_KEY, JSON.stringify(plan)); }catch(e){}
+  if(window.fbSave) window.fbSave('plan', plan);
+}
+
+async function loadPlanFromFirebase(){
+  if(!window.fbLoad) return;
+  try{
+    const plan = await window.fbLoad('plan');
+    if(!plan) return;
+    if(!plan.dias || !plan.ejercicios || !plan.comidas) return;
+    currentPlan = plan;
+    localStorage.setItem(PLAN_KEY, JSON.stringify(plan));
+  }catch(e){}
 }
 
 function resetPlan(){
   if(!confirm('¿Restaurar el plan original? Se perderán los cambios de IA anteriores.')) return;
   localStorage.removeItem(PLAN_KEY);
   currentPlan = JSON.parse(JSON.stringify(DEFAULT_PLAN));
+  if(window.fbSave) window.fbSave('plan', currentPlan);
   render();
   closeModal('settings');
   toast('Plan original restaurado ✓');
@@ -1372,6 +1436,74 @@ function exportJSON(){
   toast('Reporte .JSON exportado ✓');
 }
 
+/* ═══════════════════════════════════════
+   IMPORTAR PLAN (desde JSON de Claude)
+═══════════════════════════════════════ */
+
+function triggerImport(){
+  document.getElementById('import-file').value='';
+  document.getElementById('import-file').click();
+}
+
+function importPlan(event){
+  const file = event.target.files[0];
+  if(!file){ return; }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const raw = JSON.parse(e.target.result);
+
+      // Acepta dos formatos:
+      // 1) El JSON completo del preparador: { plan: { dias, ejercicios, comidas, calentamiento } }
+      // 2) El plan directo: { dias, ejercicios, comidas, calentamiento }
+      const plan = raw.plan || raw;
+
+      if(!plan.dias || !plan.ejercicios || !plan.comidas){
+        toast('⚠ JSON no reconocido. Pide a Claude el formato correcto.');
+        return;
+      }
+
+      // Mensaje del preparador si viene incluido
+      const msg = raw.mensaje_entrenador || raw.mensaje || null;
+      const cambios = raw.resumen_cambios || null;
+
+      // Confirmar antes de aplicar
+      const confirmMsg = msg
+        ? `📋 Mensaje de Claude:\n\n"${msg}"\n\n¿Aplicar el nuevo plan?`
+        : '¿Aplicar el plan importado? Se sobreescribirá el plan actual.';
+
+      if(!confirm(confirmMsg)) return;
+
+      currentPlan = plan;
+      savePlan(currentPlan);
+
+      // Resetear registros semanales pero mantener reportes clínicos
+      state.series = {};
+      state.recOpt = {};
+      state.meals  = {};
+      currentPlan.dias.forEach(d=>{
+        state.section[d.id] = 0;
+        state.meals[d.id]   = {};
+        if(!state.reports[d.id]){
+          state.reports[d.id]={weight:'',sleep:7,energy:7,fatigue:3,digest:'Buena/Ligera',joints:'Flexible/Bien',pisq:0,padd:0,obs:''};
+        }
+      });
+      saveState();
+      render();
+
+      if(cambios){
+        setTimeout(()=>alert(`📊 Cambios aplicados:\n\n${cambios}`), 300);
+      } else {
+        toast('✅ Plan importado correctamente');
+      }
+
+    }catch(err){
+      toast('⚠ Error al leer el archivo JSON');
+    }
+  };
+  reader.readAsText(file);
+}
+
 function getWeekLabel(){
   const now=new Date();
   const mon=new Date(now);
@@ -1398,16 +1530,16 @@ function toast(msg){
 ═══════════════════════════════════════ */
 
 function saveState(){
-  try{
-    localStorage.setItem(STORAGE_KEY,JSON.stringify({
-      series:state.series,
-      recOpt:state.recOpt,
-      meals:state.meals,
-      reports:state.reports,
-      section:state.section,
-      day:state.day,
-    }));
-  }catch(e){}
+  const data = {
+    series:state.series,
+    recOpt:state.recOpt,
+    meals:state.meals,
+    reports:state.reports,
+    section:state.section,
+    day:state.day,
+  };
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }catch(e){}
+  if(window.fbSave) window.fbSave('state', data);
 }
 
 function loadState(){
@@ -1426,6 +1558,27 @@ function loadState(){
           state.reports[d.id]={...state.reports[d.id],...saved.reports[d.id]};
       });
     }
+  }catch(e){}
+}
+
+async function loadStateFromFirebase(){
+  if(!window.fbLoad) return;
+  try{
+    const saved = await window.fbLoad('state');
+    if(!saved) return;
+    if(saved.series)  state.series=saved.series;
+    if(saved.recOpt)  state.recOpt=saved.recOpt;
+    if(saved.meals)   state.meals=saved.meals;
+    if(saved.section) state.section=saved.section;
+    if(saved.day)     state.day=saved.day;
+    if(saved.reports){
+      currentPlan.dias.forEach(d=>{
+        if(saved.reports[d.id])
+          state.reports[d.id]={...state.reports[d.id],...saved.reports[d.id]};
+      });
+    }
+    render();
+    toast('☁️ Datos sincronizados con la nube');
   }catch(e){}
 }
 
@@ -1500,6 +1653,12 @@ if(!localStorage.getItem(STORAGE_KEY)){
 }
 
 render();
+
+// Sincronizar con Firebase cuando esté listo
+window.addEventListener('firebase-ready', async ()=>{
+  await loadPlanFromFirebase();
+  await loadStateFromFirebase();
+});
 
 /* ═══════════════════════════════════════
    PWA — ICONO + MANIFEST + SERVICE WORKER
